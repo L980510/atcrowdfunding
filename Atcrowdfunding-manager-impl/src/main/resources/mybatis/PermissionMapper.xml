@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.atguigu.atcrowdfunding.manager.dao.PermissionMapper">
+	<resultMap id="BaseResultMap" type="com.atguigu.atcrowdfunding.bean.Permission">
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="pid" property="pid" jdbcType="CHAR" />
+		<result column="name" property="name" jdbcType="CHAR" />
+		<result column="icon" property="icon" jdbcType="CHAR" />
+		<result column="url" property="url" jdbcType="CHAR" />
+	</resultMap>
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+		delete from t_permission
+		where id = #{id,jdbcType=INTEGER}
+	</delete>
+	<insert id="insert" parameterType="com.atguigu.atcrowdfunding.bean.Permission" useGeneratedKeys="true" keyProperty="id">
+		insert into t_permission (id,pid,
+		name,icon,url
+		)
+		values
+		(#{id,jdbcType=INTEGER},#{pid}, #{name,jdbcType=VARCHAR}
+		,#{icon},#{url}
+
+		)
+	</insert>
+	<update id="updateByPrimaryKey" parameterType="com.atguigu.atcrowdfunding.bean.Permission">
+		update t_permission
+		set
+		<if test="pid!=null">
+			pid = #{pid,jdbcType=VARCHAR},
+		</if>
+
+		name = #{name,jdbcType=VARCHAR},
+		icon = #{icon,jdbcType=VARCHAR},
+		url = #{url,jdbcType=VARCHAR}
+		where id = #{id,jdbcType=INTEGER}
+	</update>
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap"
+		parameterType="java.lang.Integer">
+		select id, pid,
+		name,icon,url
+		from t_permission
+		where id = #{id,jdbcType=INTEGER}
+	</select>
+	<select id="selectAll" resultMap="BaseResultMap">
+		select id, pid,
+		name,icon,url
+		from t_permission
+	</select>
+
+	<select id="queryList" resultMap="BaseResultMap">
+		select id, pid,
+		name,icon,url
+		from t_permission
+		<where>
+			<if test="queryText!=null">
+
+			</if>
+		</where>
+		limit #{startIndex},#{pageSize}
+	</select>
+	<select id="queryCountPermission" resultType="java.lang.Integer">
+		select count(*) from t_permission
+		<where>
+			<if test="queryText!=null">
+				and name like concat('%',#{queryText},'%')
+			</if>
+		</where>
+	</select>
+
+	<!--<delete id="toBatchDeletePermission" parameterType="java.lang.Integer">
+		delete from t_permission where id in
+		<foreach collection="roleList" item="role" open="(" close=")" separator=",">
+			#{role.id}
+		</foreach>
+	</delete>-->
+    <select id="queryRootPermission" resultMap="BaseResultMap">
+		select id, pid,
+		name,icon,url
+		from t_permission
+		where pid is null
+	</select>
+	<select id="queryChildrenByRootIdPermission" resultType="com.atguigu.atcrowdfunding.bean.Permission">
+			select id, pid,
+		name,icon,url
+		from t_permission
+		where pid=#{id}
+	</select>
+	<select id="queryAllPermissions" resultMap="BaseResultMap">
+		select id, pid,
+		name,icon,url
+		from t_permission
+	</select>
+    <select id="queryPermissionByRoleId"
+			resultType="int">
+		select p.id from t_permission p join
+		t_role_permission rp
+		on p.id=rp.permissionid
+		where rp.roleid=#{roleid}
+	</select>
+    <select id="getPermissionByUserId" resultType="com.atguigu.atcrowdfunding.bean.Permission">
+		select DISTINCT(p.id),p.pid,p.name,p.icon,p.url from t_permission p
+		join t_role_permission rp
+		on rp.permissionid=p.id
+		join t_role r
+		on rp.roleid=r.id
+		join t_user_role ur
+		on r.id=ur.roleid
+		join t_user u
+		on ur.userid=u.id
+		where u.id=#{userid}
+	</select>
+
+</mapper>

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" id="WebApp_ID" version="2.5">
+     <display-name>atcrowdfunding</display-name>
+    <!--加载spring的配置文件（在项目启动时候就初始化号）：
+    是application范围内的参数，存放在servletcontext中
+    在servlet 中可得到参数
+    <context-param>直接配置在web.xml的<web-app>标签中,属于上下文参数,在整个web应用中都可以使用,
+    它是全局的,因此存放在servletContext对象中(即application对象);
+        通过getServletContext().getInitParameter("contextParam")的方式获取;
+    -->
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>classpath*:spring/spring-*.xml</param-value>
+    </context-param>
+    <!--监听器的作用：
+     创建spring框架的ioc容器。
+     将IOC容器对象存放到application域。
+     Application ioc=WebApplicationContextUtils.getWebApplicationContext(application);
+
+     ServletContextListener监听器接口：
+        监听ServletContext的创建和销毁
+           如果监听到ServletContext的创建（ServletContext的创建时在服务器启动时候），就会创建ioc容器（ioc容器的具体类型：xmlWebApplicationContext）
+           如果监听到ServletContext的销毁（ServletContext的销毁在服务器停止，或者项目下线），就会销毁ServletContext的ioc容器
+
+    -->
+    <!--监听器-->
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
+    <!--自定义监听器（作用：解决上下文路径问题）-->
+    <listener>
+        <listener-class>com.atguigu.atcrowdfunding.listener.StartSystemListener</listener-class>
+    </listener>
+    <!--过滤器只能解决post请求乱码问题，不能解决get请求的乱码问题-->
+    <filter>
+        <filter-name>encoding</filter-name>
+        <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+        <init-param>
+            <param-name>encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+        <init-param>
+            <param-name>forceEncoding</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>encoding</filter-name>
+        <!--url-pattern过滤路径/*是过滤所有请求-->
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    <!--支持RESTFUL风格，将POST请求转换PUT或者DELETE请求
+    回话读取隐含参数：“——method”
+    -->
+    <filter>
+        <filter-name>HiddenHttpMethodFilter</filter-name>
+        <filter-class>org.springframework.web.filter.HiddenHttpMethodFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>HiddenHttpMethodFilter</filter-name>
+        <servlet-name>dispatcherServlet</servlet-name>
+    </filter-mapping>
+    <!--配置前端控制器-->
+    <servlet>
+        <servlet-name>dispatcherServlet</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <param-value>classpath*:spring/springmvc-context.xml</param-value>
+        </init-param>
+        <!--因为serlvet是单例的，所有在项目启动的时候会加载webx.xml文件，并且通过类加载器
+        创建该前端控制器的实力并且通过反射机制拿到给对象的字节码文件
+
+        配置load-on-startup标签作用是：项目启动时候就创建serlvet，
+        如果没有配置这只在第一次请求访问的时候创建-->
+        <load-on-startup>1</load-on-startup>
+
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>dispatcherServlet</servlet-name>
+        <!--配置请求url（接口）-->
+        <url-pattern>*.do</url-pattern><!--访问的地址-->
+        <url-pattern>*.htm</url-pattern>
+    </servlet-mapping>
+    <!--回话超时时间设置-->
+    <session-config>
+        <session-timeout>60</session-timeout>
+    </session-config>
+    <!--配置欢迎界面-->
+    <welcome-file-list>
+        <welcome-file>index.jsp</welcome-file>
+    </welcome-file-list>
+</web-app>

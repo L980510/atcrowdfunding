@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.atguigu.atcrowdfunding.manager.dao.UserMapper">
+
+	<resultMap id="BaseResultMap" type="com.atguigu.atcrowdfunding.bean.User">
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="loginacct" property="loginAcct" jdbcType="VARCHAR" />
+		<result column="userpswd" property="userPswd" jdbcType="CHAR" />
+		<result column="username" property="username" jdbcType="VARCHAR" />
+		<result column="email" property="email" jdbcType="VARCHAR" />
+		<result column="createtime" property="createTime" jdbcType="CHAR" />
+	</resultMap>
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+		delete from t_user
+		where id = #{id,jdbcType=INTEGER}
+	</delete>
+	<insert id="insert" parameterType="com.atguigu.atcrowdfunding.bean.User" useGeneratedKeys="true" keyProperty="id">
+		insert into t_user (id,
+		loginacct, userpswd,
+		username, email, createtime
+		)
+		values
+		(#{id,jdbcType=INTEGER}, #{loginAcct,jdbcType=VARCHAR},
+		#{userPswd,jdbcType=CHAR},
+		#{username,jdbcType=VARCHAR},
+		#{email,jdbcType=VARCHAR}, #{createTime,jdbcType=CHAR}
+		)
+	</insert>
+	<update id="updateByPrimaryKey" parameterType="com.atguigu.atcrowdfunding.bean.User">
+		update t_user
+		set
+		loginacct = #{loginAcct,jdbcType=VARCHAR},
+		<if test="userPswd!=null">
+			userpswd =
+			#{userPswd,jdbcType=CHAR},
+		</if>
+
+		username = #{username,jdbcType=VARCHAR},
+		email = #{email,jdbcType=VARCHAR}
+		<if test="createTime!=null">
+			createtime =
+			#{createTime,jdbcType=CHAR}
+		</if>
+
+		where id = #{id,jdbcType=INTEGER}
+	</update>
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap"
+		parameterType="java.lang.Integer">
+		select id, loginacct, userpswd, username, email,
+		createtime
+		from t_user
+		where id = #{id,jdbcType=INTEGER}
+	</select>
+	<select id="selectAll" resultMap="BaseResultMap">
+		select id, loginacct, userpswd,
+		username, email, createtime
+		from t_user
+	</select>
+
+	<select id="queryUserlogin" parameterType="map" resultMap="BaseResultMap">
+		select id, loginacct, userpswd,
+		username, email, createtime
+		from t_user where loginacct=#{loginAcct} and userpswd=#{userPswd}
+	</select>
+    <!--<select id="queryList" resultMap="BaseResultMap">
+		select id, loginacct, userpswd,
+				username, email, createtime
+				from t_user limit #{startIndex},#{pageSize}
+	</select>
+	<select id="queryCountUser" resultType="java.lang.Integer">
+		select count(*) from t_user
+	</select>-->
+	<select id="queryList" resultMap="BaseResultMap">
+		select id, loginacct, userpswd,
+		username, email, createtime
+		from t_user
+		<where>
+			<if test="queryText!=null">
+				and loginacct like concat('%',#{queryText},'%')
+			</if>
+		</where>
+		order by createtime desc
+		limit #{startIndex},#{pageSize}
+	</select>
+	<select id="queryCountUser" resultType="java.lang.Integer">
+		select count(*) from t_user
+		<where>
+			<if test="queryText!=null">
+				and loginacct like concat('%',#{queryText},'%')
+			</if>
+		</where>
+	</select>
+	<!--批量删除-->
+	<delete id="toBatchDelete" parameterType="java.lang.Integer">
+		delete from t_user where id in
+		<foreach collection="array" item="userid" open="(" close=")" separator=",">
+			#{userid}
+		</foreach>
+	</delete>
+	<delete id="toBatchDeleteUser" parameterType="java.lang.Integer">
+		delete from t_user where id in
+		<foreach collection="userList" item="user" >
+			#{user.id}
+		</foreach>
+	</delete>
+	<!--通过用户id查询对应用户在数据库中有哪些角色-->
+	<select id="selectByUserIdRoleData" resultType="int">
+		select roleid from t_user_role where userid=#{id}
+	</select>
+	<!--为用户添加角色-->
+	<insert id="saveUserRoleRelation" >
+		insert into t_user_role (userid,roleid) values(#{userid},#{roleid})
+	</insert>
+	<!-- //通过用户id取消用户某些角色-->
+	<delete id="deleteUserRoleRelation">
+		delete from t_user_role where userid=#{userid} and roleid in
+		<foreach collection="ids"  item="roleid" open="(" close=")" separator=",">
+			#{roleid}
+		</foreach>
+	</delete>
+</mapper>

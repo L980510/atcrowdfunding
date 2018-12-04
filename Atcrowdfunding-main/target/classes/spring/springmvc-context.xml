@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+    <!--配置扫描service层的路径-->
+    <!--为什么配置use-default-filters="false" 因为spring是父容器，而springMVC是子容器
+    而且如果不配置这个service层是使用不了事物的，其中一个原因是：springmvc这边没有配置事物
+    -->
+        <context:component-scan base-package="com.atguigu.*" use-default-filters="false">
+            <!--不扫描org.springframework.stereotype.Controller-->
+            <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+        </context:component-scan>
+       <!--开启注解功能-->
+       <context:annotation-config/>
+
+       <!--配置字符串编码转换器（服务器端将json数据返回给客服端）-->
+       <bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
+           <property name="messageConverters">
+               <list>
+                   <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+                      <property name="supportedMediaTypes">
+                          <list>
+                              <value>application/json;charset=UTF-8</value>
+                          </list>
+                      </property>
+                   </bean>
+               </list>
+           </property>
+       </bean>
+       <!--配置视图解析器-->
+
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>
+        <property name="prefix" value="/WEB-INF/jsp/"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+
+
+    <!--配置异常解析器
+     异常解析器捕获异常之后，会将异常对象存放到requesr域，属性名称默认是
+     Exception
+    -->
+  <!--  <bean id="exceptionResolver" class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+        <property name="exceptionMappings">
+            <props>
+                <prop key="java.lang.Exception">error/error</prop>
+                <prop key="com.atguigu.atcrowdfunding.excaption.LoginUserException">login</prop>
+            </props>
+        </property>
+    </bean>-->
+
+    <!--文件上传解析器
+    p:defaultEncoding="utf-8"配置：是保证上传的中文乱码问题
+
+    -->
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver" p:defaultEncoding="utf-8">
+        <property name="maxInMemorySize" value="2097152"/>
+        <!--配置懒加载：当请求上传文件的时候才会执行该操作-->
+        <property name="resolveLazily" value="true"/>
+    </bean>
+    <!--配置拦截器-->
+    <mvc:interceptors>
+       <!-- <mvc:interceptor>
+            <mvc:mapping path="/**"/>
+            <mvc:exclude-mapping path="/login.do"></mvc:exclude-mapping>
+        </mvc:interceptor>-->
+        <!--配置登入拦截器-->
+        <bean id="loginInterceptor" class="com.atguigu.atcrowdfunding.interceptor.LoginInterceptor"></bean>
+        <!--配置权限拦截器-->
+        <bean id="authInterceptor" class="com.atguigu.atcrowdfunding.interceptor.AuthInterceptor"></bean>
+    </mvc:interceptors>
+</beans>

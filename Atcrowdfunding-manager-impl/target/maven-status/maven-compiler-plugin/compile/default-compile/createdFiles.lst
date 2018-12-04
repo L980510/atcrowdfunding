@@ -1,0 +1,4 @@
+com\atguigu\atcrowdfunding\manager\controller\TestController.class
+com\atguigu\atcrowdfunding\manager\service\impl\TestServiceImplment.class
+com\atguigu\atcrowdfunding\manager\service\impl\UserServiceImpl.class
+com\atguigu\atcrowdfunding\manager\controller\UserController.class

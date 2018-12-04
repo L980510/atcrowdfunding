@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+        <!--引入连接池的资源文件-->
+       <bean id="preferencesPlaceholderConfigurer" class="org.springframework.beans.factory.config.PreferencesPlaceholderConfigurer">
+           <property name="locations" value="classpath:config/jdbc.properties"/>
+       </bean>
+
+       <!--配置连接池-->
+         <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+             <!--配置连接池的四要素-->
+             <property name="jdbcUrl" value="${jdbc.url}"/>
+             <property name="user" value="${jdbc.user}"/>
+             <property name="password" value="${jdbc.password}"/>
+             <property name="driverClass" value="${jdbc.driver}"/>
+         </bean>
+    <!--spring和mybatis集成-->
+     <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+         <!--配置mybatis的个性化操作-->
+         <property name="configLocation" value="classpath:mybatis/mybatis-config.xml"/>
+         <!--配置扫描mapper.xml包的扫描路径-->
+         <property name="mapperLocations" value="classpath*:mybatis/*Mapper.xml"/>
+         <!--配置连接池-->
+         <property name="dataSource" ref="dataSource"/>
+     </bean>
+     <!--配置注解扫描器-->
+     <context:annotation-config/>
+    <!--配置扫描mepper接口的映射文件路径-->
+    <bean id="mapperScannerConfigurer" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.atguigu.atcrowdfunding.*.dao" />
+    </bean>
+    <!--配置扫描service层的路径-->
+    <context:component-scan base-package="com.atguigu.*">
+        <!--不扫描org.springframework.stereotype.Controller-->
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+    <!--配置事物管理器-->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    <!--配置事物管理器-->
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <!--你要想是务管理器是干什么:是来管理事物的所以太需要依赖配置的管理器
+        配置好管理器你需要告诉系统你要给那些方法做事物
+        -->
+        <tx:attributes>
+            <!--propagation="REQUIRED"支持当前事务，假设当前没有事务。就新建一个事务-->
+            <tx:method name="*" propagation="REQUIRED" isolation="DEFAULT" no-rollback-for="java.lang.Exception"/>
+             <tx:method name="query*" read-only="true"/>
+            <tx:method name="get*" read-only="true"/>
+        </tx:attributes>
+        <!--配置好的管理器用到那个类上的那个方法-->
+
+    </tx:advice>
+    <aop:config>
+        <aop:advisor advice-ref="txAdvice" pointcut="execution(* com.atguigu.atcrowdfunding.*.*Service.*(..))"/>
+    </aop:config>
+
+    <context:component-scan base-package="com.atguigu.atcrowdfunding.*">
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+</beans>
