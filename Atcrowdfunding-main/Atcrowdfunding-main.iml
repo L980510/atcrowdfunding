@@ -27,11 +27,13 @@
           <dependency>web application context</dependency>
           <file>file://$MODULE_DIR$/src/main/resources/spring/springmvc-context.xml</file>
         </fileset>
-        <fileset id="fileset" name="Spring Application Context" removed="false">
+        <fileset id="fileset2" name="Spring Application Context " removed="false">
           <file>file://$MODULE_DIR$/src/main/resources/spring/spring-context.xml</file>
           <file>file://$MODULE_DIR$/target/Atcrowdfunding-main-1.0-SNAPSHOT/WEB-INF/classes/spring/spring-context.xml</file>
-          <file>file://$MODULE_DIR$/src/main/resources/spring/springmvc-context.xml</file>
+          <file>file://$MODULE_DIR$/src/main/resources/spring/spring-flow.xml</file>
+          <file>file://$MODULE_DIR$/target/Atcrowdfunding-main-1.0-SNAPSHOT/WEB-INF/classes/spring/spring-flow.xml</file>
           <file>file://$MODULE_DIR$/target/Atcrowdfunding-main-1.0-SNAPSHOT/WEB-INF/classes/spring/springmvc-context.xml</file>
+          <file>file://$MODULE_DIR$/src/main/resources/spring/springmvc-context.xml</file>
         </fileset>
       </configuration>
     </facet>
@@ -44,6 +46,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/resources" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/resources" isTestSource="true" />
     </content>
     <orderEntry type="jdk" jdkName="1.8" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />
