@@ -154,7 +154,7 @@ table tbody td:nth-child(even) {
 			    queryPage(${param.currentPage}-1);
 			    </c:if>
 
-			   // showMenu();
+			    showMenu();
 
             });
 
@@ -166,10 +166,11 @@ table tbody td:nth-child(even) {
             //使用Ajax异步查询数据
             function queryPage( pageIndex ){
                 console.log("索引："+pageIndex);
+                //因为索引是从0开始而已当前页是从1开始
             	var dataObj = {
 
         			"currentPage" : pageIndex+1 ,   //currentPage 是属性名称,是否增加双引号无所谓
-        			"pageSize" : 3
+        			"pageSize" : 10
         		};
             	if(condition){
             		dataObj.pagetext = $("#queryText").val(); //增加模糊查询条件
@@ -342,9 +343,7 @@ table tbody td:nth-child(even) {
             
 
         </script>
-<%--
        <script type="text/javascript" src="${APP_PATH }/script/menu.js"></script>
---%>
 </body>
 
 </html>

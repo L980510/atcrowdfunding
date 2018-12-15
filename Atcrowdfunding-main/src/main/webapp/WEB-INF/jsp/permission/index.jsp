@@ -82,6 +82,7 @@
         });
         //页面加载完毕在调用初始化该树结构
         commonAJax();
+        showMenu();
     });
 
         //======================
@@ -175,7 +176,9 @@
             layer.close(cindex);
         })
     }
+
 </script>
+<script type="text/javascript" src="${APP_PATH }/script/menu.js"></script>
 </body>
 </html>
 

@@ -1,9 +1,9 @@
 package com.atguigu.atcrowdfunding.activititest;
 
-import org.activiti.engine.HistoryService;
-import org.activiti.engine.ProcessEngine;
-import org.activiti.engine.RepositoryService;
-import org.activiti.engine.TaskService;
+import com.atguigu.atcrowdfunding.activiti.listener.NoListener;
+import com.atguigu.atcrowdfunding.activiti.listener.YesListener;
+import org.activiti.engine.*;
+import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricProcessInstanceQuery;
 import org.activiti.engine.repository.*;
 import org.activiti.engine.runtime.ProcessInstance;
@@ -24,6 +24,236 @@ public class ActivitiTest {
 
     ApplicationContext ico=new ClassPathXmlApplicationContext("spring/spring-*.xml");
     ProcessEngine processEngine = (ProcessEngine)ico.getBean("processEngine");
+   //=========================================
+    //10.邮件任务流程监听器
+    @Test
+    public void Activitis13(){
+        //部署流程
+        Map<String, Object> map = new HashMap<String, Object>();
+        YesListener yesListener = new YesListener();
+        NoListener noListener = new NoListener();
+        map.put("yesListener",yesListener);
+        map.put("noListener",noListener);
+        //通过流程引擎对象获取运行服务对象
+        RuntimeService runtimeService = processEngine.getRuntimeService();
+        //通过运行时期对象来启动实例
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("myProcess_1", map);
+        System.out.println("启动流程实例："+processInstance);
+
+    }
+
+    //领取任务
+    @Test
+    public void Activitis14(){
+        //通过流程引擎对象获取任务服务
+        TaskService taskService = processEngine.getTaskService();
+        //通过拿到任务服务创建任务对象
+        TaskQuery taskQuery = taskService.createTaskQuery();
+        //为任务对象分配委托人
+        List<Task> list = taskQuery.taskAssignee("zhangsan").list();
+        for (Task task : list) {
+            System.out.println("id:"+task.getId());
+            System.out.println("name:"+task.getName());
+            //领取任务
+            taskService.setVariable(task.getId(),"flg",true);
+            taskService.complete(task.getId());
+        }
+
+        ProcessDefinition processDefinition = processEngine.getRepositoryService().createProcessDefinitionQuery().latestVersion().singleResult();
+
+        //之后再查查询一下zhangsan是否还有任务
+        HistoricProcessInstance historicProcessInstance = processEngine.getHistoryService().createHistoricProcessInstanceQuery()
+                .processDefinitionId(processDefinition.getId()).finished().singleResult();
+        System.out.println("流程是否完成："+historicProcessInstance);
+
+
+    }
+
+
+
+    //=======================================================
+    //9并行网关(只有并行网关中有一个没有领取任务就无法完成)
+    /**
+     * 流程实例
+     */
+    @Test
+    public void Activitis10(){
+        //通过流程引擎对象获取持久层服务对象
+        RepositoryService repositoryService = processEngine.getRepositoryService();
+        //通过持久层服务对象拿到最后一次部署对象
+        ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().latestVersion().singleResult();
+        //拿到部署对象拿到部署对象id
+        //之后进行启动流程实例
+        //之后进行启动流程实例
+        //注意你 //如果存在流程变量，那么在启动流程变量实例时候需要给流程变量赋值
+        HashMap<String, Object> map = new HashMap<String, Object>();
+        map.put("day",4);
+        map.put("cost",6000);
+        ProcessInstance processInstance = processEngine.getRuntimeService().startProcessInstanceById(processDefinition.getId(),map);
+        System.out.println("启动流程实例对象："+processInstance);
+    }
+    //8.1领取任务
+    //7领取任务
+    @Test
+    public void Activitis11(){
+        //通过流程引擎对象获取任务服务
+        TaskService taskService = processEngine.getTaskService();
+        //通过拿到任务服务创建任务对象
+        TaskQuery taskQuery = taskService.createTaskQuery();
+        //为任务对象分配委托人
+        List<Task> list = taskQuery.taskAssignee("zhangsan").list();
+        List<Task> list2 = taskQuery.taskAssignee("lisi").list();
+        for (Task task : list) {
+            System.out.println("id:"+task.getId());
+            System.out.println("name:"+task.getName());
+            //领取任务
+            taskService.complete(task.getId());
+        }
+        for (Task task : list2) {
+            System.out.println("id:" + task.getId());
+            System.out.println("name:" + task.getName());
+            //领取任务
+            taskService.complete(task.getId());
+        }
+
+
+        ProcessDefinition processDefinition = processEngine.getRepositoryService().createProcessDefinitionQuery().latestVersion().singleResult();
+
+        //之后再查查询一下zhangsan是否还有任务
+        HistoricProcessInstance historicProcessInstance = processEngine.getHistoryService().createHistoricProcessInstanceQuery()
+                .processDefinitionId(processDefinition.getId()).finished().singleResult();
+        System.out.println("流程是否完成："+historicProcessInstance);
+
+
+    }
+    //9并行网关(只有并行网关中有一个没有领取任务就无法完成)
+    /**
+     * 流程实例
+     */
+    @Test
+    public void Activitis9(){
+        //通过流程引擎对象获取持久层服务对象
+        RepositoryService repositoryService = processEngine.getRepositoryService();
+        //通过持久层服务对象拿到最后一次部署对象
+        ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().latestVersion().singleResult();
+        //拿到部署对象拿到部署对象id
+        //之后进行启动流程实例
+        //之后进行启动流程实例
+
+        ProcessInstance processInstance = processEngine.getRuntimeService().startProcessInstanceById(processDefinition.getId());
+        System.out.println("启动流程实例对象："+processInstance);
+    }
+    //8.1领取任务
+    //7领取任务
+    @Test
+    public void Activitis91(){
+        //通过流程引擎对象获取任务服务
+        TaskService taskService = processEngine.getTaskService();
+        //通过拿到任务服务创建任务对象
+        TaskQuery taskQuery = taskService.createTaskQuery();
+        //为任务对象分配委托人
+        List<Task> list = taskQuery.taskAssignee("zhangsan").list();
+        List<Task> list2 = taskQuery.taskAssignee("lisi").list();
+        for (Task task : list) {
+            System.out.println("id:"+task.getId());
+            System.out.println("name:"+task.getName());
+            //领取任务
+            taskService.complete(task.getId());
+        }
+        for (Task task : list2) {
+            System.out.println("id:" + task.getId());
+            System.out.println("name:" + task.getName());
+            //领取任务
+            taskService.complete(task.getId());
+        }
+
+
+        ProcessDefinition processDefinition = processEngine.getRepositoryService().createProcessDefinitionQuery().latestVersion().singleResult();
+
+        //之后再查查询一下zhangsan是否还有任务
+        HistoricProcessInstance historicProcessInstance = processEngine.getHistoryService().createHistoricProcessInstanceQuery()
+                .processDefinitionId(processDefinition.getId()).finished().singleResult();
+        System.out.println("流程是否完成："+historicProcessInstance);
+
+
+    }
+
+
+    //================================================
+
+   //8排他网关
+
+    /**
+     * 流程实例
+     */
+    @Test
+    public void Activitis8(){
+        //通过流程引擎对象获取持久层服务对象
+        RepositoryService repositoryService = processEngine.getRepositoryService();
+        //通过持久层服务对象拿到最后一次部署对象
+        ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().latestVersion().singleResult();
+        //拿到部署对象拿到部署对象id
+        //之后进行启动流程实例
+        //注意你 //如果存在流程变量，那么在启动流程变量实例时候需要给流程变量赋值
+        HashMap<String, Object> map = new HashMap<String, Object>();
+        map.put("day",4);
+        ProcessInstance processInstance = processEngine.getRuntimeService().startProcessInstanceById(processDefinition.getId(), map);
+        System.out.println("启动流程实例对象："+processInstance);
+    }
+    //8.1领取任务
+    //7领取任务
+    @Test
+    public void Activitis81(){
+        //通过流程引擎对象获取任务服务
+        TaskService taskService = processEngine.getTaskService();
+        //通过拿到任务服务创建任务对象
+        TaskQuery taskQuery = taskService.createTaskQuery();
+        //为任务对象分配委托人
+        List<Task> list = taskQuery.taskAssignee("zhangsan").list();
+        List<Task> list2 = taskQuery.taskAssignee("lisi").list();
+        for (Task task : list) {
+            System.out.println("id:"+task.getId());
+            System.out.println("name:"+task.getName());
+            //领取任务
+            taskService.complete(task.getId());
+        }
+        for (Task task : list2) {
+            System.out.println("id:"+task.getId());
+            System.out.println("name:"+task.getName());
+            //领取任务
+            taskService.complete(task.getId());
+        }
+
+        list = taskQuery.taskAssignee("zhangsan").list();
+        list2 = taskQuery.taskAssignee("lisi").list();
+        for (Task task : list) {
+            System.out.println("id:"+task.getId());
+            System.out.println("name:"+task.getName());
+            //领取任务
+            taskService.complete(task.getId());
+        }
+        for (Task task : list2) {
+            System.out.println("id:"+task.getId());
+            System.out.println("name:"+task.getName());
+            //领取任务
+            taskService.complete(task.getId());
+        }
+
+        ProcessDefinition processDefinition = processEngine.getRepositoryService().createProcessDefinitionQuery().latestVersion().singleResult();
+
+        //之后再查查询一下zhangsan是否还有任务
+        HistoricProcessInstance historicProcessInstance = processEngine.getHistoryService().createHistoricProcessInstanceQuery()
+                .processDefinitionId(processDefinition.getId()).finished().singleResult();
+        System.out.println("流程是否完成："+historicProcessInstance);
+
+
+    }
+
+
+
+
+       //=============================================================================
+
     //7领取任务
     @Test
     public void Activitis7(){
@@ -213,7 +443,7 @@ public class ActivitiTest {
         RepositoryService repositoryService = processEngine.getRepositoryService();
         //Deployment deploy = repositoryService.createDeployment().addClasspathResource("MyProcess.bpmn").deploy();
        // Deployment deploy = repositoryService.createDeployment().addClasspathResource("MyProcess2.bpmn").deploy();
-        Deployment deploy = repositoryService.createDeployment().addClasspathResource("MyProcess3.bpmn").deploy();
+        Deployment deploy = repositoryService.createDeployment().addClasspathResource("MyProcess8.bpmn").deploy();
         System.out.println("deploy:"+deploy);
 
     }

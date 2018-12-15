@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="${APP_PATH}/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="${APP_PATH}/css/font-awesome.min.css">
     <link rel="stylesheet" href="${APP_PATH}/css/main.css">
+    <link rel="stylesheet" href="${APP_PATH}/jquery/pagination/lib/pagination.css">
     <style>
         .tree li {
             list-style-type: none;
@@ -99,29 +100,10 @@
                             <tfoot>
                             <tr >
                                 <td colspan="6" align="center">
-                                    <ul class="pagination">
-                                       <%-- <c:if test="${userPageResult.currentPage==1 }">
-                                            <li class="disabled"><a href="#">上一页</a></li>
-                                        </c:if>
-                                        <c:if test="${userPageResult.currentPage!=1 }">
-                                            <li><a href="#" onclick="pageChange(${userPageResult.currentPage-1})">上一页</a></li>
-                                        </c:if>
+                                    <%--<ul class="pagination">
 
-                                        <c:forEach begin="1" end="${userPageResult.totalno }" var="num">
-                                            <li
-                                                    <c:if test="${userPageResult.currentPage==num }">
-                                                        class="active"
-                                                    </c:if>
-                                            ><a href="#" onclick="pageChange(${num})">${num }</a></li>
-                                        </c:forEach>
-
-                                        <c:if test="${userPageResult.currentPage==userPageResult.totalno }">
-                                            <li class="disabled"><a href="#">下一页</a></li>
-                                        </c:if>
-                                        <c:if test="${userPageResult.currentPage!=userPageResult.totalno }">
-                                            <li><a href="#" onclick="pageChange(${userPageResult.currentPage+1})">下一页</a></li>
-                                        </c:if>--%>
-                                    </ul>
+                                    </ul>--%>
+                                    <div id="Pagination" class="pagination"><!-- 这里显示分页 --></div>
                                 </td>
                             </tr>
                             </tfoot>
@@ -137,6 +119,7 @@
 <script src="${APP_PATH}/bootstrap/js/bootstrap.min.js"></script>
 <script src="${APP_PATH}/script/docs.min.js"></script>
 <script src="${APP_PATH}/jquery/layer/layer.js"></script>
+<script src="${APP_PATH}/jquery/pagination/lib/jquery.pagination.js"></script>
 
 <script type="text/javascript">
     $(function () {
@@ -150,7 +133,17 @@
                 }
             }
         });
-        queryPageUser(1);
+
+        <c:if test="${empty param.currentPage}">
+        queryPageUser(0);
+        </c:if>
+        <c:if test="${not empty param.currentPage}">
+        queryPageUser(${param.currentPage}-1);
+        </c:if>
+        //调用分页请求
+       /* queryPageUser(0);*/
+        ///*后台页面点击菜单并且选中该菜单标红和菜单栏展开*/
+        showMenu();
     });
     $("tbody .btn-success").click(function(){
         window.location.href = "${APP_PATH}/assignRole.htm";
@@ -160,7 +153,7 @@
     });
     function pageChange(currentPage) {
        // window.location.href ="${APP_PATH}/user/list.htm?currentPage="+currentPage;
-       queryPageUser(currentPage);
+       queryPageUser(currentPage-1);
        //alert("1111");
     }
     jsonObj={
@@ -169,9 +162,12 @@
     }
     var loadingIndex=-1;
 
-    function queryPageUser(currentPage) {
+    function queryPageUser(pageIndex) {
         //alert("2222");
-        jsonObj.currentPage = currentPage;
+        jsonObj.currentPage = pageIndex+1;
+        if(condition){
+            jsonObj.pagetext = $("#queryText").val(); //增加模糊查询条件
+        }
         $.ajax({
             type: "post",
             data: jsonObj,
@@ -183,7 +179,7 @@
                 return true;
             },
             success: function (ajaxResult) {
-                layer.close();
+                layer.close(loadingIndex);
                 if (ajaxResult.success == true) {
                     //如果状态为4状态码为200
                     //获取业务层封装好的数据
@@ -216,15 +212,15 @@
                     //将拼接好的数据添加到tbody标签中
                     $("tbody").html(content);
                     //=====拼接分页数据==============
-                    var contentBar = '';
-                    /*上一页*/
+                    //var contentBar = '';
+                    /*/!*上一页*!/
                     if (page.currentPage == 1) {
                         contentBar += '<li class="disabled"><a href="#">上一页</a></li>';
                     } else {
                         contentBar += '<li><a href="#" onclick="pageChange(' + (page.currentPage - 1) + ')" >上一页</a></li>';
 
                     }
-                    /*导航条*/
+                    /!*导航条*!/
                     for (var i = 1; i <= page.totalno; i++) {
                         contentBar += '<li';
                         if (page.currentPage == i) {
@@ -232,7 +228,7 @@
                         }
                         contentBar += '><a href="#" onclick="pageChange(' + i + ')">' + i + '</a></li>'
                     }
-                    /*下一页*/
+                    /!*下一页*!/
                     if (page.currentPage == page.totalno) {
                         contentBar += '<li class="disabled"><a href="#">下一页</a></li>';
                     } else {
@@ -240,8 +236,20 @@
                         contentBar += '<li><a href="#" onclick="pageChange(' + (page.currentPage + 1) + ')" >下一页</a></li>';
 
                     }
-                    /*最后将分页到拼接添加到这个pagination中去*/
-                    $(".pagination").html(contentBar);
+                    /!*最后将分页到拼接添加到这个pagination中去*!/
+                    $(".pagination").html(contentBar);*/
+                    // 创建分页
+                    var num_entries =page.totalCount;
+                    $("#Pagination").pagination(num_entries, {
+                        num_edge_entries: 2, //边缘页数
+                        num_display_entries: 4, //主体页数
+                        callback: queryPageUser,
+                        items_per_page:page.pageSize, //每页显示1项
+                        current_page:(page.currentPage-1),
+                        prev_text : "上一页",
+                        next_text : "下一页",
+
+                    });
                 } else {
                     layer.msg(ajaxResult.message, {time: 1000, icon: 5, shift: 6})
                 }
@@ -252,11 +260,13 @@
             }
         });
     }
+    var condition = false ;
     /*条件查询*/
     $("#queryBtn").click(function () {
         //要拿到用户输入的值
         var queryText=$("#queryText").val();
         jsonObj.queryText=queryText;
+        condition = true ;
         //因为你条件查询她显示的还是显示第一页
         pageChange(1);
     })
@@ -368,6 +378,7 @@
    })
 
 </script>
+<script type="text/javascript" src="${APP_PATH }/script/menu.js"></script>
 </body>
 </html>
 

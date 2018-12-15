@@ -75,7 +75,7 @@
 <script>
     $(function () {
         var a=${sessionScope.rootPermission.children };
-        alert(a);
+        //alert(a);
     })
 </script>
 <ul style="padding-left:0px;" class="list-group">

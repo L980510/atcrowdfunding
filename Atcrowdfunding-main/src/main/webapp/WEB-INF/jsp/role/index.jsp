@@ -149,6 +149,7 @@
             }
         });
         queryPageUser(1);
+        showMenu();
     });
     $("tbody .btn-success").click(function(){
         window.location.href = "${APP_PATH}/assignRole.htm";
@@ -355,6 +356,8 @@
     })
 
 </script>
+<script type="text/javascript" src="${APP_PATH }/script/menu.js"></script>
+
 </body>
 </html>
 
